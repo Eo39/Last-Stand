@@ -4,19 +4,19 @@ import numpy as np
 import cv2
 from PIL import Image
 
-# ----------------------------
+# --------------------------------
 # PAGE CONFIG
-# ----------------------------
+# --------------------------------
 
 st.set_page_config(
     page_title="Fundbüro",
-    page_icon="💀",
+    page_icon="🐋",
     layout="centered"
 )
 
-# ----------------------------
-# PIXEL STYLE CSS
-# ----------------------------
+# --------------------------------
+# PIXEL OCEAN STYLE
+# --------------------------------
 
 st.markdown("""
 <style>
@@ -24,119 +24,194 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 html, body, [class*="css"]  {
-    background-color: #111111;
-    color: #f5f5f5;
     font-family: 'Press Start 2P', cursive;
+    overflow-x: hidden;
 }
 
-/* MAIN CONTAINER */
-.main {
+/* BACKGROUND */
+.stApp {
     background: linear-gradient(
         180deg,
-        #161616 0%,
-        #0f0f0f 100%
+        #001f3f 0%,
+        #003f7f 40%,
+        #0074D9 100%
     );
+    color: white;
+}
+
+/* WAVES */
+.wave {
+    position: fixed;
+    width: 200%;
+    height: 200px;
+    background: rgba(255,255,255,0.05);
+    top: 0;
+    left: 0;
+    border-radius: 45%;
+    animation: wave 12s linear infinite;
+    z-index: 0;
+}
+
+.wave2 {
+    top: 100px;
+    animation-duration: 18s;
+    opacity: 0.4;
+}
+
+@keyframes wave {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* WHALES */
+.whale {
+    position: fixed;
+    font-size: 70px;
+    animation: swim 25s linear infinite;
+    z-index: 1;
+    opacity: 0.9;
+}
+
+.whale2 {
+    top: 70%;
+    animation-duration: 32s;
+    font-size: 55px;
+}
+
+.whale3 {
+    top: 40%;
+    animation-duration: 20s;
+    font-size: 80px;
+}
+
+@keyframes swim {
+    from {
+        transform: translateX(-20vw);
+    }
+    to {
+        transform: translateX(120vw);
+    }
+}
+
+/* CONTENT */
+.main-container {
+    position: relative;
+    z-index: 5;
 }
 
 /* TITLE */
 .pixel-title {
     text-align: center;
-    font-size: 38px;
+    font-size: 42px;
     color: #ffffff;
-    text-shadow:
-        4px 4px 0px #ff004c,
-        8px 8px 0px #00d9ff;
     margin-top: 20px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
+
+    text-shadow:
+        4px 4px 0px #001f3f,
+        8px 8px 0px #00c3ff;
 }
 
-/* SUBTEXT */
+/* SUBTITLE */
 .pixel-sub {
     text-align: center;
-    color: #bbbbbb;
+    color: #d6f4ff;
     font-size: 12px;
-    margin-bottom: 30px;
-}
-
-/* BUTTON */
-.stButton>button {
-    background-color: #ff004c;
-    color: white;
-    border: 4px solid white;
-    border-radius: 0px;
-    padding: 12px 20px;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 12px;
-    box-shadow: 6px 6px 0px #000000;
-}
-
-.stButton>button:hover {
-    background-color: #00d9ff;
-    color: black;
+    margin-bottom: 35px;
 }
 
 /* FILE UPLOADER */
 section[data-testid="stFileUploader"] {
-    border: 3px dashed #ff004c;
-    padding: 20px;
-    background-color: #1b1b1b;
+    border: 4px dashed #7FDBFF;
+    background-color: rgba(0,0,0,0.25);
+    padding: 25px;
+    border-radius: 0px;
 }
 
-/* SUCCESS BOX */
+/* BUTTON */
+.stButton>button {
+    background-color: #39CCCC;
+    color: black;
+    border: 4px solid white;
+    border-radius: 0px;
+    font-family: 'Press Start 2P', cursive;
+    box-shadow: 6px 6px 0px #001f3f;
+}
+
+.stButton>button:hover {
+    background-color: #7FDBFF;
+    color: black;
+}
+
+/* SUCCESS */
 .stSuccess {
-    background-color: #1e4620;
-    border: 3px solid #00ff66;
+    background-color: rgba(0, 255, 200, 0.2);
+    border: 3px solid #39CCCC;
 }
 
-/* WARNING BOX */
+/* WARNING */
 .stWarning {
-    background-color: #4d3a00;
-    border: 3px solid #ffcc00;
+    background-color: rgba(255,255,0,0.2);
+    border: 3px solid yellow;
 }
 
-/* IMAGE */
+/* IMAGES */
 img {
     border: 4px solid white;
     image-rendering: pixelated;
 }
 
 </style>
+
+<div class="wave"></div>
+<div class="wave wave2"></div>
+
+<div class="whale" style="top:20%;">🐋</div>
+<div class="whale whale2">🐳</div>
+<div class="whale whale3">🐋</div>
+
 """, unsafe_allow_html=True)
 
-# ----------------------------
+# --------------------------------
 # HEADER
-# ----------------------------
+# --------------------------------
 
 st.markdown("""
+<div class="main-container">
+
 <div class="pixel-title">
-💀 FUNDBÜRO 💀
+🐋 FUNDBÜRO 🐋
 </div>
-""", unsafe_allow_html=True)
 
-st.markdown("""
 <div class="pixel-sub">
-Verlorene Kleidung erkennen wie ein Dungeon Loot Scanner
+Verlorene Kleidung aus den Tiefen des Ozeans finden
+</div>
+
 </div>
 """, unsafe_allow_html=True)
 
-# ----------------------------
-# LOAD MODEL
-# ----------------------------
+# --------------------------------
+# MODEL
+# --------------------------------
 
 model = YOLO("yolov8n.pt")
 
-# ----------------------------
-# UPLOADER
-# ----------------------------
+# --------------------------------
+# UPLOAD
+# --------------------------------
 
 uploaded_file = st.file_uploader(
     "BILD HOCHLADEN",
     type=["jpg", "jpeg", "png"]
 )
 
-# ----------------------------
+# --------------------------------
 # COLOR DETECTION
-# ----------------------------
+# --------------------------------
 
 def detect_color(image_crop):
 
@@ -158,9 +233,9 @@ def detect_color(image_crop):
     else:
         return "SCHWARZ ⚫"
 
-# ----------------------------
-# IMAGE PROCESSING
-# ----------------------------
+# --------------------------------
+# PROCESS IMAGE
+# --------------------------------
 
 if uploaded_file:
 
@@ -175,7 +250,7 @@ if uploaded_file:
             cv2.COLOR_RGB2BGR
         )
 
-        with st.spinner("Dungeon Scan läuft..."):
+        with st.spinner("🐋 OZEANSCAN LÄUFT..."):
 
             results = model.predict(
                 source=img_array,
@@ -212,15 +287,15 @@ if uploaded_file:
                     st.image(
                         torso,
                         channels="BGR",
-                        caption=f"ERKANNTE FARBE: {color}"
+                        caption=f"GEFUNDENE FARBE: {color}"
                     )
 
                     st.success(
-                        f"ITEM GEFUNDEN → {color}"
+                        f"🐳 ITEM GEFUNDEN → {color}"
                     )
 
         if not found:
-            st.warning("KEIN CHARAKTER ERKANNT")
+            st.warning("KEIN CHARAKTER IM OZEAN GEFUNDEN")
 
     except Exception as e:
 
