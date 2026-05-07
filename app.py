@@ -4,50 +4,96 @@ import numpy as np
 import cv2
 from PIL import Image
 
-# YOLO Modell laden
+st.title("Fundbüro Kleidungserkennung 👕")
+
+# Modell laden
 model = YOLO("yolov8n.pt")
 
-st.title("T-Shirt Farb-Erkennung 👕")
-
-uploaded_file = st.file_uploader("Lade ein Bild hoch", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader(
+    "Bild hochladen",
+    type=["jpg", "jpeg", "png"]
+)
 
 def detect_color(image_crop):
-    # Bild verkleinern für schnellere Berechnung
+
     img = cv2.resize(image_crop, (100, 100))
-    
-    # Durchschnittsfarbe berechnen
-    avg_color = img.mean(axis=0).mean(axis=0)  # BGR
-    
+
+    avg_color = img.mean(axis=0).mean(axis=0)
+
     b, g, r = avg_color
 
-    # Einfache Logik
-    if r > b and r > g:
-        return "Rot", r / (r+g+b)
+    if r > g and r > b:
+        return "Rot"
+
+    elif g > r and g > b:
+        return "Grün"
+
     elif b > r and b > g:
-        return "Blau", b / (r+g+b)
+        return "Blau"
+
     else:
-        return "Schwarz/Dunkel", (r+g+b)/3 / 255
+        return "Schwarz/Dunkel"
 
 if uploaded_file:
-    image = Image.open(uploaded_file)
-    img_array = np.array(image)
 
-    results = model(img_array)
+    try:
 
-    for r in results:
-        boxes = r.boxes
-        for box in boxes:
-            cls_id = int(box.cls[0])
-            label = model.names[cls_id]
+        image = Image.open(uploaded_file).convert("RGB")
 
-            # Nur T-Shirts
-            if label in ["t-shirt", "shirt"]:
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
+        img_array = np.array(image, dtype=np.uint8)
 
-                crop = img_array[y1:y2, x1:x2]
+        # RGB -> BGR
+        img_array = cv2.cvtColor(
+            img_array,
+            cv2.COLOR_RGB2BGR
+        )
 
-                color, confidence = detect_color(crop)
+        results = model.predict(
+            source=img_array,
+            imgsz=640,
+            conf=0.25
+        )
 
-                st.image(crop, caption=f"{color} ({confidence*100:.2f}%)")
+        found = False
 
-                st.write(f"Erkannt als: **{color}** mit {confidence*100:.2f}%")
+        for r in results:
+
+            for box in r.boxes:
+
+                cls_id = int(box.cls[0])
+
+                label = model.names[cls_id]
+
+                if label == "person":
+
+                    found = True
+
+                    x1, y1, x2, y2 = map(
+                        int,
+                        box.xyxy[0]
+                    )
+
+                    # Oberkörper
+                    torso = img_array[
+                        y1:int((y1+y2)/2),
+                        x1:x2
+                    ]
+
+                    color = detect_color(torso)
+
+                    st.image(
+                        torso,
+                        channels="BGR",
+                        caption=f"Farbe: {color}"
+                    )
+
+                    st.success(
+                        f"Erkannt: {color}"
+                    )
+
+        if not found:
+            st.warning("Keine Person erkannt.")
+
+    except Exception as e:
+
+        st.error(f"Fehler: {e}")
